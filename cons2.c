@@ -8,6 +8,7 @@
 #include <iostream>
 using namespace std;
 void merge(int arr[], int l, int m, int r) {
+    //computing indexes
     int n1 = m - l + 1;
     int n2 = r - m;
     int L[n1], R[n2];
@@ -41,6 +42,9 @@ void merge(int arr[], int l, int m, int r) {
 }
 
 void merge_sort(int arr[], int l, int r) {
+    //we will fork the program at every function call
+        //we will move/sort left with child program
+        //we will move/sort righr with the parent program
     if (l < r) {
         int m = l + (r - l) / 2;
         pid_t pid = fork();
@@ -64,10 +68,13 @@ void merge_sort(int arr[], int l, int r) {
 int main(int argc, char* argv[]){
     int *shared_memory;
     int shmid;
+    //attacing it to the memory block
+    //creted in the producer
     shmid=shmget((key_t)1122, sizeof(int) * 8, 0666|IPC_EXCL);
     //cout <<"The key of the shared memory is: "<<shmid<<endl;
     shared_memory = (int *)shmat(shmid, NULL, 0);
     //cout <<"The process is attaced at: "<< shared_memory<<endl;
+    //sorting the right side of the array 
     merge_sort(shared_memory, 4, 7);
     
 
