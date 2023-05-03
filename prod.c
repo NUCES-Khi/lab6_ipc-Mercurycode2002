@@ -71,12 +71,14 @@ int main(int argc, char* argv[]){
     int shmid;
     //creating the shared memory
     shmid = shmget((key_t)1122, sizeof(int) * 8, 0666|IPC_CREAT);
+    //shmid = shmget((key_t)1122, sizeof(int) * 262144, 0666|IPC_CREAT);
     //we will associate it with a variable
     shared_memory = (int *)shmat(shmid, NULL, 0);
     
     int pid = fork();
     if (pid == 0) { // Child process
         //we check if the both halves are sorted or not
+        //if(check_sorted(shared_memory, 0,131072) && check_sorted(shared_memory,131072, 262143)){
         if(check_sorted(shared_memory, 0, 4) && check_sorted(shared_memory,4, 8)){
             cout<<"List is fit for merging"<<endl;
             //then we will sort it one final time
@@ -90,6 +92,7 @@ int main(int argc, char* argv[]){
         }
         
         //tells user to run the consumers if the array is not sorted.
+         //if(!check_sorted(shared_memory, 0,131072) && !check_sorted(shared_memory,131072, 262143)){
         if(!check_sorted(shared_memory,4, 8) || !check_sorted(shared_memory, 0, 4))
             cout<< "Run consumer to sort the array"<<endl;     
          
