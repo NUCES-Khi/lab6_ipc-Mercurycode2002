@@ -8,6 +8,7 @@
 #include <iostream>
 using namespace std;
 void merge(int arr[], int l, int m, int r) {
+    //computing indexes
     int n1 = m - l + 1;
     int n2 = r - m;
     int L[n1], R[n2];
@@ -28,6 +29,7 @@ void merge(int arr[], int l, int m, int r) {
         }
         k++;
     }
+    
     while(i < n1){
         arr[k] = L[i];
         i++;
@@ -43,6 +45,9 @@ void merge(int arr[], int l, int m, int r) {
 void merge_sort(int arr[], int l, int r) {
     if (l < r) {
         int m = l + (r - l) / 2;
+        //we will fork the program at every function call
+        //we will move/sort left with child program
+        //we will move/sort righr with the parent program
         pid_t pid = fork();
         if (pid < 0) {
             perror("fork");
@@ -55,6 +60,8 @@ void merge_sort(int arr[], int l, int r) {
         else {
             merge_sort(arr, m + 1, r);
             int status;
+            //we will wait for all the children
+            //to sort the left side, then we will move the right side
             waitpid(pid, &status, 0);
         }
         merge(arr, l, m, r);
@@ -64,12 +71,15 @@ void merge_sort(int arr[], int l, int r) {
 int main(int argc, char* argv[]){
     int *shared_memory;
     int shmid;
+    //attacing it to the memory block
+    //creted int producer
     shmid=shmget((key_t)1122, sizeof(int) * 8, 0666|IPC_EXCL);
     //cout <<"The key of the shared memory is: "<<shmid<<endl;
     shared_memory = (int *)shmat(shmid, NULL, 0);
     //cout <<"The process is attaced at: "<< shared_memory<<endl;
+    //sorting the left side of the array first
     merge_sort(shared_memory, 0, 3);
-
+    //print the sorted array
     cout<<"sorting left side: "<<endl;
     for(int i = 0; i < 8; i++)
         cout<<shared_memory[i]<<", ";
