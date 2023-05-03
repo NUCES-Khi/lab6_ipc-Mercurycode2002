@@ -9,12 +9,17 @@
 using namespace std;
 bool check_sorted(int list[], int s,int n){
     for(int i = s; i < n - 1 ; i++){
+        //if the current element is larger than the
+        //adjacent one, it means that the list is 
+        //sorted
         if(list[i] > list[i + 1])
             return false;
     }
     return true;
 }
+
 void merge(int arr[], int l, int m, int r){
+    //merge sort array
     int i, j, k;
     int n1 = m - l + 1;
     int n2 = r - m;
@@ -64,28 +69,35 @@ int main(int argc, char* argv[]){
     srand(time(NULL));
     int *shared_memory;
     int shmid;
-    
+    //creating the shared memory
     shmid = shmget((key_t)1122, sizeof(int) * 8, 0666|IPC_CREAT);
+    //we will associate it with a variable
     shared_memory = (int *)shmat(shmid, NULL, 0);
     
     int pid = fork();
     if (pid == 0) { // Child process
+        //we check if the both halves are sorted or not
         if(check_sorted(shared_memory, 0, 4) && check_sorted(shared_memory,4, 8)){
             cout<<"List is fit for merging"<<endl;
+            //then we will sort it one final time
             merge(shared_memory, 0, 3, 7);
             cout<<"sorted array:"<<endl;
+            //printing the array
             for(int i = 0; i < 8; i++){
                cout<<shared_memory[i]<<", ";
             }
             cout<<endl;
         }
-            
+        
+        //tells user to run the consumers if the array is not sorted.
         if(!check_sorted(shared_memory,4, 8) || !check_sorted(shared_memory, 0, 4))
             cout<< "Run consumer to sort the array"<<endl;     
          
     }
     else if (pid > 0 ) { // Parent process
         cout<< "Waiting for child "<<endl ;
+        //wait for the child to check the array
+        //otherwise generate a new array
         wait(NULL);
         for(int i = 0; i < 8; i++)
             shared_memory[i] = rand() % 100; 
@@ -93,6 +105,7 @@ int main(int argc, char* argv[]){
         for(int i = 0; i < 8; i++){
            cout<<shared_memory[i]<<", ";
         }
+        //deallocating memory
         shmdt((void *) shared_memory);
     }
     else { // Fork failed
